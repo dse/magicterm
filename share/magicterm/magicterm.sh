@@ -168,6 +168,25 @@ set_terminfo_has () {
 }
 
 do_magicterm () {
+    local OPTARG
+    local OPTIND=1
+    local OPTERR=1
+    local OPTION
+
+    local mt_verbose=0
+
+    while getopts 'vh' OPTION "${@}" ; do
+        case "${OPTION}" in
+            'v')
+                mt_verbose=$((mt_verbose + 1));;
+            'h')
+                usage; exit 2;;
+            *)
+                exit 1;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
     set_terminfo_has || return 1
 
     # Certain local terminal programs, and other environments, can

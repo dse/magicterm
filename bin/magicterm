@@ -7,26 +7,7 @@ shopt -s lastpipe
 . "$(dirname "$0")/../share/magicterm/magicterm.sh"
 
 main () {
-    local OPTARG
-    local OPTIND=1
-    local OPTERR=1
-    local OPTION
-
-    local mt_verbose=0
-
-    while getopts 'vh' OPTION "${@}" ; do
-        case "${OPTION}" in
-            'v')
-                mt_verbose=$((mt_verbose + 1));;
-            'h')
-                usage; exit 2;;
-            *)
-                exit 1;;
-        esac
-    done
-    shift $((OPTIND - 1))
-
-    do_magicterm
+    do_magicterm "$@"
 
     if [[ "${TERM}" = "" ]] ; then
         echo "unset TERM;"
