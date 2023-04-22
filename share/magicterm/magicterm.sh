@@ -14,7 +14,7 @@ MT_ECHO () {
 }
 
 has_true_color () {
-    [[ -v _has_true_color ]] && return $_has_true_color
+    [[ -v _has_true_color ]] && [[ "$_has_true_color" != "" ]] && return $_has_true_color
 
     local REPLY
     local SAVECOLOR
@@ -60,7 +60,7 @@ has_true_color () {
 }
 
 has_256_color () {
-    [[ -v _has_256_color ]] && return $_has_256_color
+    [[ -v _has_256_color ]] && [[ "$_has_256_color" != "" ]] && return $_has_256_color
 
     local REPLY
 
@@ -90,7 +90,7 @@ has_256_color () {
 }
 
 has_88_color () {
-    [[ -v _has_88_color ]] && return $_has_88_color
+    [[ -v _has_88_color ]] && [[ "$_has_88_color" != "" ]] && return $_has_88_color
 
     local REPLY
 
@@ -120,7 +120,7 @@ has_88_color () {
 }
 
 has_16_color () {
-    [[ -v _has_16_color ]] && return $_has_16_color
+    [[ -v _has_16_color ]] && [[ "$_has_16_color" != "" ]] && return $_has_16_color
 
     local REPLY
 
@@ -174,6 +174,10 @@ do_magicterm () {
     local OPTION
 
     local mt_verbose=0
+    local _has_true_color=''
+    local _has_256_color=''
+    local _has_88_color=''
+    local _has_16_color=''
 
     while getopts 'vh' OPTION "${@}" ; do
         case "${OPTION}" in
