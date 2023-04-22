@@ -1,7 +1,5 @@
 # -*- mode: sh; sh-shell: bash -*-
 
-: ${mt_verbose:=1}       # assign default value
-
 DCS=$'\eP'
 CSI=$'\e['
 ST=$'\e\\'
@@ -178,13 +176,16 @@ do_magicterm () {
     local _has_256_color=''
     local _has_88_color=''
     local _has_16_color=''
+    local mt_short_circuit=1
 
-    while getopts 'vh' OPTION "${@}" ; do
+    while getopts 'vhf' OPTION "${@}" ; do
         case "${OPTION}" in
             'v')
                 mt_verbose=$((mt_verbose + 1));;
             'h')
                 usage; exit 2;;
+            'f')
+                mt_short_circuit=0;;
             *)
                 exit 1;;
         esac
@@ -193,29 +194,35 @@ do_magicterm () {
 
     set_terminfo_has || return 1
 
-    # Certain local terminal programs, and other environments, can
-    # short-circuit that big ole' else clause from hell below.
-    if [[ -v TERM_PROGRAM ]] && [[ "${TERM_PROGRAM}" = "Apple_Terminal" ]] ; then
-        TERM=xterm-256color; unset COLORTERM
-    elif [[ -v TERM_PROGRAM ]] && [[ "${TERM_PROGRAM}" = "iTerm.app" ]] ; then
-        TERM=xterm-256color; unset COLORTERM
-    elif [[ -v TERMKIT_HOST_APP ]] && [[ "${TERMKIT_HOST_APP}" = "Cathode" ]]  ;then
-        TERM=xterm-256color; unset COLORTERM
-    elif [[ -v TERM_PROGRAM ]] && [[ "$TERM_PROGRAM" = "tmux" ]] ; then
-        export TERM=tmux-256color; unset COLORTERM
-    elif [[ -v TMUX ]] && [[ "${TMUX}" != "" ]] ; then
-        export TERM=tmux-256color; unset COLORTERM
-    elif [[ -v STY ]] && [[ "$STY" != "" ]] ; then
-        export TERM=screen-256color; unset COLORTERM
-    else
-        if [[ "$TERM" = "screen-direct" ]]   ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=screen-256color COLORTERM=truecolor ; fi ; fi
-        if [[ "$TERM" = "screen-256color" ]] ; then if terminfo_has && has_256_color  ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor ; fi ; fi
-        if [[ "$TERM" = "tmux-direct" ]]     ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=tmux-256color COLORTERM=truecolor ; fi ; fi
-        if [[ "$TERM" = "tmux-256color" ]]   ; then if terminfo_has && has_256_color  ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor ; fi ; fi
-        if [[ "$TERM" = "mintty-direct" ]]   ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor ; fi ; fi
-        if [[ "$TERM" = "xterm-direct" ]]    ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-256color; unset COLORTERM  ; fi ; fi
-        if [[ "$TERM" = "screen-256color" ]] ; then if terminfo_has && has_256_color  ; then unset COLORTERM            ; return ; else export TERM=xterm-256color; unset COLORTERM  ; fi ; fi
-        if [[ "$TERM" = "xterm-256color" ]]  ; then if terminfo_has && has_256_color  ; then unset COLORTERM            ; return ; else export TERM=xterm-88color; unset COLORTERM   ; fi ; fi
-        if [[ "$TERM" = "xterm-88color" ]]   ; then if terminfo_has && has_88_color   ; then unset COLORTERM            ; return ; else export TERM=xterm; unset COLORTERM           ; fi ; fi
+    if (( mt_short_circuit )) ; then
+        if [[ -v TERM_PROGRAM ]] && [[ "${TERM_PROGRAM}" = "Apple_Terminal" ]] ; then
+            TERM=xterm-256color; unset COLORTERM
+            return 0
+        elif [[ -v TERM_PROGRAM ]] && [[ "${TERM_PROGRAM}" = "iTerm.app" ]] ; then
+            TERM=xterm-256color; unset COLORTERM
+            return 0
+        elif [[ -v TERMKIT_HOST_APP ]] && [[ "${TERMKIT_HOST_APP}" = "Cathode" ]] ; then
+            TERM=xterm-256color; unset COLORTERM
+            return 0
+        elif [[ -v TERM_PROGRAM ]] && [[ "$TERM_PROGRAM" = "tmux" ]] ; then
+            export TERM=tmux-256color; unset COLORTERM
+            return 0
+        elif [[ -v TMUX ]] && [[ "${TMUX}" != "" ]] ; then
+            export TERM=tmux-256color; unset COLORTERM
+            return 0
+        elif [[ -v STY ]] && [[ "$STY" != "" ]] ; then
+            export TERM=screen-256color; unset COLORTERM
+            return 0
+        fi
     fi
+
+    if [[ "$TERM" = "screen-direct" ]]   ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=screen-256color COLORTERM=truecolor ; fi ; fi
+    if [[ "$TERM" = "screen-256color" ]] ; then if terminfo_has && has_256_color  ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor ; fi ; fi
+    if [[ "$TERM" = "tmux-direct" ]]     ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=tmux-256color COLORTERM=truecolor ; fi ; fi
+    if [[ "$TERM" = "tmux-256color" ]]   ; then if terminfo_has && has_256_color  ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor ; fi ; fi
+    if [[ "$TERM" = "mintty-direct" ]]   ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor ; fi ; fi
+    if [[ "$TERM" = "xterm-direct" ]]    ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-256color; unset COLORTERM  ; fi ; fi
+    if [[ "$TERM" = "screen-256color" ]] ; then if terminfo_has && has_256_color  ; then unset COLORTERM            ; return ; else export TERM=xterm-256color; unset COLORTERM  ; fi ; fi
+    if [[ "$TERM" = "xterm-256color" ]]  ; then if terminfo_has && has_256_color  ; then unset COLORTERM            ; return ; else export TERM=xterm-88color; unset COLORTERM   ; fi ; fi
+    if [[ "$TERM" = "xterm-88color" ]]   ; then if terminfo_has && has_88_color   ; then unset COLORTERM            ; return ; else export TERM=xterm; unset COLORTERM           ; fi ; fi
 }
