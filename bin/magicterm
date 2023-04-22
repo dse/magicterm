@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o pipefail
+set -o nounset
+shopt -s lastpipe
+
+. "$(dirname "$0")/../share/magicterm/magicterm.sh"
+
+main () {
+    local OPTARG
+    local OPTIND=1
+    local OPTERR=1
+    local OPTION
+
+    local mt_verbose=0
+
+    while getopts 'vh' OPTION "${@}" ; do
+        case "${OPTION}" in
+            'v')
+                mt_verbose=$((mt_verbose + 1));;
+            'h')
+                usage; exit 2;;
+            *)
+                exit 1;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    do_magicterm
+
+    if [[ "${TERM}" = "" ]] ; then
+        echo "unset TERM;"
+    else
+        echo "export TERM=${TERM@Q};"
+    fi
+
+    if [[ -v COLORTERM ]] && [[ "${COLORTERM}" != "" ]] ; then
+        echo "export COLORTERM=${COLORTERM@Q};"
+    else
+        echo "unset COLORTERM;"
+    fi
+}
+
+usage () { cat <<EOF; }
+usage:
+    magicterm [-v] [-h]
+EOF
+
+#------------------------------------------------------------------------------
+main "$@"
+
+# mintty terminal string presets:
+#     xterm
+#     xterm-256color
+#     xterm-direct
+#     xterm-vt220
+#     vt100
+#     vt220
+#     vt340
+#     vt420
+#     vt525
+#     mintty
+#     mintty-direct
+# Terminal.app:
+#     ansi, dtterm, nsterm, rxvt, vt52, vt100, vt102, xterm, xterm-16color, xterm-256color
