@@ -9,7 +9,7 @@ OSC=$'\e]'
 BEL=$'\a'                   # accepted as string terminal for OSC cmds
 ESC=$'\e'
 
-mt_verbose () {
+MT_ECHO () {
     (( mt_verbose )) && echo "$@" >&2
 }
 
@@ -19,17 +19,17 @@ has_true_color () {
     local REPLY
     local SAVECOLOR
 
-    (( mt_verbose )) && echo "truecolor? #1" >&2
+    MT_ECHO "truecolor? #1"
 
     echo -n "${DCS}\$qm${ST}" >/dev/tty
     read -d$'\\' -s -t 0.25 SAVECOLOR </dev/tty
     if [[ "${SAVECOLOR}" = "" ]] ; then
         _has_true_color=1
-        (( mt_verbose )) && echo "no" >&2
+        MT_ECHO "no"
         return 1
     fi
 
-    (( mt_verbose )) && echo "truecolor? #2" >&2
+    MT_ECHO "truecolor? #2"
 
     echo -n "${CSI}38;2;254;254;254m" >/dev/tty
     echo -n "${DCS}\$qm${ST}" >/dev/tty # request status string SGR
@@ -37,11 +37,11 @@ has_true_color () {
     if [[ "${REPLY}" = *"254;254;254"* ]] || [[ "${REPLY}" = *"254:254:254"* ]]; then
         echo -n "${SAVECOLOR}" >/dev/tty
         _has_true_color=0
-        (( mt_verbose )) && echo "yes" >&2
+        MT_ECHO "yes"
         return 0
     fi
 
-    (( mt_verbose )) && echo "truecolor? #3" >&2
+    MT_ECHO "truecolor? #3"
 
     echo -n "${CSI}38:2:254:254:254m" >/dev/tty
     echo -n "${DCS}\$qm${ST}" >/dev/tty # request status string SGR
@@ -49,13 +49,13 @@ has_true_color () {
     if [[ "${REPLY}" = *"254;254;254"* ]] || [[ "${REPLY}" = *"254:254:254"* ]]; then
         echo -n "${SAVECOLOR}" >/dev/tty
         _has_true_color=0
-        (( mt_verbose )) && echo "yes" >&2
+        MT_ECHO "yes"
         return 0
     fi
 
     echo -n "${SAVECOLOR}" >/dev/tty
     _has_true_color=1
-    (( mt_verbose )) && echo "no" >&2
+    MT_ECHO "no"
     return 1
 }
 
@@ -64,28 +64,28 @@ has_256_color () {
 
     local REPLY
 
-    (( mt_verbose )) && echo "256? #1" >&2
+    MT_ECHO "256? #1"
 
     echo -n $'\e]4;255;?\a' >/dev/tty
     read -d$'\a' -s -t 0.25 </dev/tty
     if [[ "${REPLY}" != "" ]] ; then
         _has_256_color=0
-        (( mt_verbose )) && echo "yes" >&2
+        MT_ECHO "yes"
         return 0
     fi
 
-    (( mt_verbose )) && echo "256? #2" >&2
+    MT_ECHO "256? #2"
 
     echo -n $'\e]4:255:?\a' >/dev/tty
     read -d$'\a' -s -t 0.25 </dev/tty
     if [[ "${REPLY}" != "" ]] ; then
         _has_256_color=0
-        (( mt_verbose )) && echo "yes" >&2
+        MT_ECHO "yes"
         return 0
     fi
 
     _has_256_color=1
-    (( mt_verbose )) && echo "no" >&2
+    MT_ECHO "no"
     return 1
 }
 
@@ -94,28 +94,28 @@ has_88_color () {
 
     local REPLY
 
-    (( mt_verbose )) && echo "88? #1" >&2
+    MT_ECHO "88? #1"
 
     echo -n $'\e]4;87;?\a' >/dev/tty
     read -d$'\a' -s -t 0.25 </dev/tty
     if [[ "$REPLY" != "" ]] ; then
         _has_88_color=0
-        (( mt_verbose )) && echo "yes" >&2
+        MT_ECHO "yes"
         return 0
     fi
 
-    (( mt_verbose )) && echo "88? #2" >&2
+    MT_ECHO "88? #2"
 
     echo -n $'\e]4:87:?\a' >/dev/tty
     read -d$'\a' -s -t 0.25 </dev/tty
     if [[ "$REPLY" != "" ]] ; then
         _has_88_color=0
-        (( mt_verbose )) && echo "yes" >&2
+        MT_ECHO "yes"
         return 0
     fi
 
     _has_88_color=1
-    (( mt_verbose )) && echo "no" >&2
+    MT_ECHO "no"
     return 1
 }
 
@@ -124,40 +124,40 @@ has_16_color () {
 
     local REPLY
 
-    (( mt_verbose )) && echo "16? #1" >&2
+    MT_ECHO "16? #1"
 
     echo -n $'\e]4;15;?\a' >/dev/tty
 
     read -d$'\a' -s -t 0.25 </dev/tty
     if [[ "$REPLY" != "" ]] ; then
         _has_16_color=0
-        (( mt_verbose )) && echo "yes" >&2
+        MT_ECHO "yes"
         return 0
     fi
 
-    (( mt_verbose )) && echo "16? #2" >&2
+    MT_ECHO "16? #2"
 
     echo -n $'\e]4:15:?\a' >/dev/tty
     read -d$'\a' -s -t 0.25 </dev/tty
     if [[ "$REPLY" != "" ]] ; then
         _has_16_color=0
-        (( mt_verbose )) && echo "yes" >&2
+        MT_ECHO "yes"
         return 0
     fi
 
     _has_16_color=1
-    (( mt_verbose )) && echo "no" >&2
+    MT_ECHO "no"
     return 1
 }
 
 set_terminfo_has () {
     if type -p infocmp >/dev/null ; then
-        (( mt_verbose )) && echo "will use infocmp" >&2
+        MT_ECHO "will use infocmp"
         terminfo_has () {
             infocmp "${1:-$TERM}" >/dev/null 2>/dev/null
         }
     elif type -p toe >/dev/null ; then
-        (( mt_verbose )) && echo "will use toe -a" >&2
+        MT_ECHO "will use toe -a"
         terminfo_has () {
             toe -a | awk '{print $1}' | grep --quiet --fixed-strings --line-regexp --regexp="${1:-$TERM}"
         }
