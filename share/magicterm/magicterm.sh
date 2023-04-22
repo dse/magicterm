@@ -41,7 +41,7 @@ has_256_color () {
     if [[ "${REPLY}" != "" ]] ; then
         _has_256_color=0; return 0
     fi
-    return 1
+    _has_256_color=1; return 1
 }
 
 has_88_color () {
@@ -145,12 +145,12 @@ do_magicterm () {
     fi
 
     if [[ "$TERM" = "screen-direct" ]]   ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=screen-256color COLORTERM=truecolor ; fi ; fi
-    if [[ "$TERM" = "screen-256color" ]] ; then if terminfo_has && has_256_color  ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor ; fi ; fi
-    if [[ "$TERM" = "tmux-direct" ]]     ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=tmux-256color COLORTERM=truecolor ; fi ; fi
-    if [[ "$TERM" = "tmux-256color" ]]   ; then if terminfo_has && has_256_color  ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor ; fi ; fi
-    if [[ "$TERM" = "mintty-direct" ]]   ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor ; fi ; fi
-    if [[ "$TERM" = "xterm-direct" ]]    ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-256color; unset COLORTERM  ; fi ; fi
-    if [[ "$TERM" = "screen-256color" ]] ; then if terminfo_has && has_256_color  ; then unset COLORTERM            ; return ; else export TERM=xterm-256color; unset COLORTERM  ; fi ; fi
-    if [[ "$TERM" = "xterm-256color" ]]  ; then if terminfo_has && has_256_color  ; then unset COLORTERM            ; return ; else export TERM=xterm-88color; unset COLORTERM   ; fi ; fi
-    if [[ "$TERM" = "xterm-88color" ]]   ; then if terminfo_has && has_88_color   ; then unset COLORTERM            ; return ; else export TERM=xterm; unset COLORTERM           ; fi ; fi
+    if [[ "$TERM" = "screen-256color" ]] ; then if terminfo_has && has_256_color  ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor    ; fi ; fi
+    if [[ "$TERM" = "tmux-direct" ]]     ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=tmux-256color COLORTERM=truecolor   ; fi ; fi
+    if [[ "$TERM" = "tmux-256color" ]]   ; then if terminfo_has && has_256_color  ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor    ; fi ; fi
+    if [[ "$TERM" = "mintty-direct" ]]   ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-direct COLORTERM=truecolor    ; fi ; fi
+    if [[ "$TERM" = "xterm-direct" ]]    ; then if terminfo_has && has_true_color ; then export COLORTERM=truecolor ; return ; else export TERM=xterm-256color; unset COLORTERM     ; fi ; fi
+    if [[ "$TERM" = "screen-256color" ]] ; then if terminfo_has && has_256_color  ; then unset COLORTERM            ; return ; else export TERM=xterm-256color; unset COLORTERM     ; fi ; fi
+    if [[ "$TERM" = "xterm-256color" ]]  ; then if terminfo_has && has_256_color  ; then unset COLORTERM            ; return ; else export TERM=xterm-88color; unset COLORTERM      ; fi ; fi
+    if [[ "$TERM" = "xterm-88color" ]]   ; then if terminfo_has && has_88_color   ; then unset COLORTERM            ; return ; else export TERM=xterm; unset COLORTERM              ; fi ; fi
 }
