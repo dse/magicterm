@@ -4,7 +4,7 @@ DCS=$'\eP'
 CSI=$'\e['
 ST=$'\e\\'
 OSC=$'\e]'
-BEL=$'\a'                                               # OSC cmds only
+BEL=$'\a'                                               # terminate OSC cmds only
 ESC=$'\e'
 
 has_true_color () {
