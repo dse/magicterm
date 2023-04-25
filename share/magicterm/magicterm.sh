@@ -103,6 +103,11 @@ do_magicterm () {
     #
     # TODO --- I mean, can we assume that the terminal emulator is setting TERM
     # to something that will work too?
+    #
+    # What prompted me to add this is gnome-terminal (libvte) still doesn't
+    # handle the DCS sequence for DECRQSS SGR correctly.  I was like, "oh maybe
+    # the terminal emulator initializes COLORTERM, check for that."
+    #
     if [[ -v COLORTERM ]] && [[ "${COLORTERM}" != "" ]] ; then
         >&2 echo "TERM=${TERM}; COLORTERM=${COLORTERM}"
         case "${TERM}" in
