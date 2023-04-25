@@ -118,6 +118,12 @@ do_magicterm () {
                     return 0
                 fi
                 ;;
+            xterm-*)
+                if terminfo_has xterm-direct ; then
+                    export TERM=xterm-direct
+                    return 0
+                fi
+                ;;
             *-256color)
                 local newterm="${TERM%-256color}-direct"
                 if terminfo_has "${newterm}" ; then
