@@ -96,6 +96,8 @@ set_terminfo_detector () {
 do_magicterm () {
     set_terminfo_detector || return 1
 
+    local newterm
+
     # If your terminal emulator sets COLORTERM, make sure TERM is something
     # that supports truecolor and is in terminfo.
     #
@@ -125,7 +127,7 @@ do_magicterm () {
                 fi
                 ;;
             *-*color)
-                local newterm="${TERM%-*color}-direct"
+                newterm="${TERM%-*color}-direct"
                 if terminfo_has "${newterm}" ; then
                     export TERM="${newterm}"
                     return 0
@@ -136,7 +138,7 @@ do_magicterm () {
                 fi
                 ;;
             screen|mintty|tmux)
-                local newterm="${TERM}-direct"
+                newterm="${TERM}-direct"
                 if terminfo_has "${newterm}" ; then
                     export TERM="${newterm}"
                     return 0
