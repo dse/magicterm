@@ -126,6 +126,22 @@ do_magicterm () {
                     return 0
                 fi
                 ;;
+            *-*-*color)                                 # e.g., A-B-88color
+                newterm="${TERM%-*color}-direct"        # e.g., A-B-direct
+                if terminfo_has "${newterm}" ; then
+                    export TERM="${newterm}"
+                    return 0
+                fi
+                newterm="${TERM%%-*color}-direct"       # e.g., A-direct
+                if terminfo_has "${newterm}" ; then
+                    export TERM="${newterm}"
+                    return 0
+                fi
+                if terminfo_has xterm-direct ; then
+                    export TERM=xterm-direct
+                    return 0
+                fi
+                ;;
             *-*color)
                 newterm="${TERM%-*color}-direct"
                 if terminfo_has "${newterm}" ; then
