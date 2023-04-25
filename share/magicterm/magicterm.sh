@@ -104,8 +104,19 @@ do_magicterm () {
     if [[ -v COLORTERM ]] && [[ "${COLORTERM}" != "" ]] ; then
         >&2 echo "TERM=${TERM}; COLORTERM=${COLORTERM}"
         case "${TERM}" in
+            xterm-direct)
+                if terminfo_has "${TERM}" ; then
+                    return 0
+                fi
+                ;;
             *-direct)
-                return 0
+                if terminfo_has "${TERM}" ; then
+                    return 0
+                fi
+                if terminfo_has xterm-direct ; then
+                    export TERM=xterm-direct
+                    return 0
+                fi
                 ;;
             *-256color)
                 local newterm="${TERM%-256color}-direct"
