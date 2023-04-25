@@ -118,7 +118,7 @@ do_magicterm () {
                     return 0
                 fi
                 ;;
-            xterm-*)
+            xterm|xterm-*)
                 if terminfo_has xterm-direct ; then
                     export TERM=xterm-direct
                     return 0
@@ -141,12 +141,6 @@ do_magicterm () {
                     export TERM="${newterm}"
                     return 0
                 fi
-                if terminfo_has xterm-direct ; then
-                    export TERM=xterm-direct
-                    return 0
-                fi
-                ;;
-            xterm)
                 if terminfo_has xterm-direct ; then
                     export TERM=xterm-direct
                     return 0
