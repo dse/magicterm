@@ -7,7 +7,8 @@ the best ones.
 I primarily wrote this to get the best color count in emacs in a
 terminal.
 
-This might actually be overkill.  This *is* a work in progress.
+This might actually be overkill.  The logic might need some
+improvement and/or simplification.  This *is* a work in progress.
 
 This might or might not become something generic that can be
 widespreadly used someday.
