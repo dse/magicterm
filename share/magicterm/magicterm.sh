@@ -76,7 +76,7 @@ has_16_color () {
     _has_16_color=1; return 1
 }
 
-set_terminfo_has () {
+set_terminfo_detector () {
     if type -p infocmp >/dev/null ; then
         (( mt_verbose )) && echo "will use infocmp" >&2
         terminfo_has () {
@@ -94,10 +94,83 @@ set_terminfo_has () {
 }
 
 do_magicterm () {
-    local OPTARG
-    local OPTIND=1
-    local OPTERR=1
-    local OPTION
+    set_terminfo_detector || return 1
+
+    local newterm
+
+    # If your terminal emulator sets COLORTERM, make sure TERM is something
+    # that supports truecolor and is in terminfo.
+    #
+    # TODO --- I mean, can we assume that the terminal emulator is setting TERM
+    # to something that will work too?
+    #
+    # What prompted me to add this is gnome-terminal (libvte) still doesn't
+    # handle the DCS sequence for DECRQSS SGR correctly.  I was like, "oh maybe
+    # the terminal emulator initializes COLORTERM, check for that."
+    #
+    if [[ -v COLORTERM ]] && [[ "${COLORTERM}" != "" ]] ; then
+        >&2 echo "TERM=${TERM}; COLORTERM=${COLORTERM}"
+        case "${TERM}" in
+            xterm-direct)
+                if terminfo_has "${TERM}" ; then
+                    return 0
+                fi
+                ;;
+            *-direct)
+                if terminfo_has "${TERM}" ; then
+                    return 0
+                fi
+                if terminfo_has xterm-direct ; then
+                    export TERM=xterm-direct
+                    return 0
+                fi
+                ;;
+            xterm|xterm-*)
+                if terminfo_has xterm-direct ; then
+                    export TERM=xterm-direct
+                    return 0
+                fi
+                ;;
+            *-*-*color)                                 # e.g., A-B-88color
+                newterm="${TERM%-*color}-direct"        # e.g., A-B-direct
+                if terminfo_has "${newterm}" ; then
+                    export TERM="${newterm}"
+                    return 0
+                fi
+                newterm="${TERM%%-*color}-direct"       # e.g., A-direct
+                if terminfo_has "${newterm}" ; then
+                    export TERM="${newterm}"
+                    return 0
+                fi
+                if terminfo_has xterm-direct ; then
+                    export TERM=xterm-direct
+                    return 0
+                fi
+                ;;
+            *-*color)
+                newterm="${TERM%-*color}-direct"
+                if terminfo_has "${newterm}" ; then
+                    export TERM="${newterm}"
+                    return 0
+                fi
+                if terminfo_has xterm-direct ; then
+                    export TERM=xterm-direct
+                    return 0
+                fi
+                ;;
+            screen|mintty|tmux)
+                newterm="${TERM}-direct"
+                if terminfo_has "${newterm}" ; then
+                    export TERM="${newterm}"
+                    return 0
+                fi
+                if terminfo_has xterm-direct ; then
+                    export TERM=xterm-direct
+                    return 0
+                fi
+                ;;
+        esac
+    fi
 
     local mt_verbose=0
     local _has_true_color=''
@@ -105,6 +178,11 @@ do_magicterm () {
     local _has_88_color=''
     local _has_16_color=''
     local mt_short_circuit=1
+
+    local OPTARG
+    local OPTIND=1
+    local OPTERR=1
+    local OPTION
 
     while getopts 'vhf' OPTION "${@}" ; do
         case "${OPTION}" in
@@ -119,8 +197,6 @@ do_magicterm () {
         esac
     done
     shift $((OPTIND - 1))
-
-    set_terminfo_has || return 1
 
     if (( mt_short_circuit )) ; then
         if [[ -v TERM_PROGRAM ]] && [[ "${TERM_PROGRAM}" = "Apple_Terminal" ]] ; then
@@ -140,6 +216,13 @@ do_magicterm () {
             return 0
         elif [[ -v STY ]] && [[ "$STY" != "" ]] ; then
             export TERM=screen-256color; unset COLORTERM
+            return 0
+        elif [[ -v GNOME_TERMINAL_SCREEN ]] || [[ -v GNOME_TERMINAL_SERVICE ]] ; then
+            if terminfo_has xterm-direct && has_true_color ; then
+                export TERM=xterm-direct COLORTERM=truecolor
+                return 0
+            fi
+            export TERM=xterm-256color; unset COLORTERM
             return 0
         fi
     fi
